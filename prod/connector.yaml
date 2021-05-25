@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: &name connector
+spec:
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 30%
+      maxUnavailable: 10%
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: k8s.app.systems/pool
+                operator: In
+                values: ["app"]
+      containers:
+        - name: *name
+          image: gcr.io/12345678/connector
+          env:
+            - name: LOG_LEVEL
+              value: "error"
+            - name: PUBSUB_PROJECT_ID
+              value: "9999"
+            - name: PUBSUB_SUB_ID
+              value: "prod-connector-sub"
+            - name: SPANNER_DATABASE
+              value: "projects/dev/instances/app-us-west1/databases/prod-connector"
+          resources:
+            limits:
+              cpu: "2500m"
+            requests:
+              cpu: "4250m"

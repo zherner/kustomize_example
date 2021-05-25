@@ -1,0 +1,13 @@
+bases:
+  - ../base
+
+namespace: production
+
+commonLabels:
+  release: stable
+
+patches:
+  - connector.yaml
+
+resources:
+  - connector_hpa.yaml
