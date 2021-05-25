@@ -1,0 +1,8 @@
+# overlay for base
+namespace: development
+
+commonLabels:
+  release: dev
+
+resources:
+  - connector.yaml

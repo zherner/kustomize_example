@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: &name connector
+  labels:
+    app: *name
+spec:
+  type: ClusterIP
+  selector:
+    app: *name
+  ports:
+  - name: connec-svc-port
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: &name connector
+  labels:
+    app: *name
+spec:
+  selector:
+    matchLabels:
+      app: *name
+  template:
+    metadata:
+      labels:
+        app: *name
+    spec:
+      containers:
+      - name: *name
+        image: gcr.io/12345678/connector
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: PUBSUB_PROJECT_ID
+            value: "1234"
+          - name: PUBSUB_SUB_ID
+            value: "dev-connector-sub"
+          - name: SPANNER_DATABASE
+            value: "projects/dev/instances/app-us-west1/databases/dev-connector"
+        command:
+          - /bin/sh
+          - -c
+          - |
+            /usr/local/bin/connector start
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+        readinessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 8081
+        resources:
+          limits:
+            cpu: "500m"
+          requests:
+            cpu: "250m"
